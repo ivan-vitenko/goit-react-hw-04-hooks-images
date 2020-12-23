@@ -7,9 +7,16 @@ import sItem from '../ImageGalleryItem/ImageGalleryItem.module.css';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
 import pixabayAPI from '../../services/PixabayAPI';
 
-function ImageGallery({ query, page, setLastPage, resetState, openImage }) {
+function ImageGallery({
+  query,
+  isNewQuery,
+  page,
+  setLastPage,
+  setVisibilityLoadMore,
+  resetState,
+  openImage,
+}) {
   const [images, setImages] = useState([]);
-  const [totalImages, setTotalImages] = useState(0);
   const [showLoader, setShowLoader] = useState(false);
 
   useEffect(() => {
@@ -17,47 +24,38 @@ function ImageGallery({ query, page, setLastPage, resetState, openImage }) {
       return;
     }
 
-    // if (query) {
-    //   setImages([]);
-    //   setTotalImages(0);
-    // }
-
-    // setShowLoader(true);
     fetchImages();
-    // setShowLoader(false);
 
     async function fetchImages() {
-      const newImages = await pixabayAPI.fetchPixabayImages(query, page);
-      // console.log(newImages);
-      setImages(state => [...state, ...newImages.hits]);
-      // setImages([...images, ...newImages.hits]);
-      // console.log(images);
-      // console.log(newImages);
-      // console.log(query);
-      // console.log(page);
-      // console.log('');
+      if (isNewQuery) {
+        setImages([]);
+      }
 
-      setTotalImages(newImages.total);
+      setShowLoader(true);
+
+      const newImages = await pixabayAPI.fetchPixabayImages(query, page);
+      setImages(state => [...state, ...newImages.hits]);
+
+      setShowLoader(false);
 
       imagesIsAvailable();
       scrollToEndPage();
 
-      setLastPage(Math.ceil(totalImages / 12));
-    }
+      const lastPage = Math.ceil(newImages.total / 12);
+      setLastPage(lastPage);
 
-    function imagesIsAvailable() {
-      if (!images.length) {
-        toast.error('За запитом нічого не знайдено. Спробуйте інший запит!');
-        resetState();
+      if (page < lastPage) {
+        setVisibilityLoadMore(true);
+      }
+
+      function imagesIsAvailable() {
+        if (!newImages.hits.length) {
+          toast.error('За запитом нічого не знайдено. Спробуйте інший запит!');
+          resetState();
+        }
       }
     }
-  }, [
-    // images,
-    // totalImages, showLoader,
-    query,
-    page,
-    // setLastPage, resetState
-  ]);
+  }, [query, page]);
 
   const scrollToEndPage = () => {
     window.scrollTo({

@@ -9,6 +9,7 @@ import Modal from './conponents/Modal/Modal';
 
 function App() {
   const [query, setQuery] = useState('');
+  const [isNewQuery, setIsNewQuery] = useState(true);
   const [page, setPage] = useState(0);
   const [lastPage, setLastPage] = useState(1);
   const [visibilityLoadMore, setVisibilityLoadMore] = useState(false);
@@ -16,24 +17,16 @@ function App() {
 
   const resetState = () => {
     setQuery('');
+    setIsNewQuery(true);
     setPage(0);
     setLastPage(1);
     setVisibilityLoadMore(false);
     setLargeImageURL('');
   };
 
-  const setNewLastPage = newLastPage => {
-    setLastPage(newLastPage);
-
-    // console.log(page);
-    // console.log(lastPage);
-
-    if (page < lastPage) {
-      setVisibilityLoadMore(true);
-    }
-  };
-
   const handleLoadMore = () => {
+    setIsNewQuery(false);
+
     setPage(state => state + 1);
 
     if (page === lastPage - 1) {
@@ -43,8 +36,8 @@ function App() {
   };
 
   const handleFormSubmit = newQuery => {
+    setIsNewQuery(true);
     setQuery(newQuery);
-    // console.log(query);
     setPage(1);
   };
 
@@ -65,8 +58,10 @@ function App() {
       {query && (
         <ImageGallery
           query={query}
+          isNewQuery={isNewQuery}
           page={page}
-          setLastPage={setNewLastPage}
+          setLastPage={setLastPage}
+          setVisibilityLoadMore={setVisibilityLoadMore}
           resetState={resetState}
           openImage={openImage}
         />
